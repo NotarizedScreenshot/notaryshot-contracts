@@ -3,5 +3,5 @@ pragma solidity ^0.8.15;
 import "@openzeppelin/token/ERC721/extensions/IERC721Metadata.sol";
 
 interface INotaryShot is IERC721Metadata {
-    function mint(string calldata url, uint256 urlContentHash, uint256 tokenId) external;
+    function submitMint(string calldata url, uint256 urlContentHash) external;
 }
