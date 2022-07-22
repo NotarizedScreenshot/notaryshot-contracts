@@ -23,7 +23,7 @@ contract NotaryShot is ERC721Enumerable, INotaryShot, ChainlinkClient {
     bytes32 public jobId;
 
     mapping(bytes32 => RequestData) public requestIdToAddress;
-
+    mapping(uint256 => string) public metadata;
 
     constructor(address _oracle, string memory _jobid) ERC721("NotarizedScreenshot", "NS"){
         setChainlinkToken(0xb0897686c545045aFc77CF20eC7A532E3120E0F1);
@@ -44,7 +44,8 @@ contract NotaryShot is ERC721Enumerable, INotaryShot, ChainlinkClient {
     }
 
     function tokenURI(uint256 tokenId) public view override(ERC721, IERC721Metadata) returns (string memory) {
-        return "https://ytwfrmzfwi7oigsoinjcijvyn4kxg4x2z2zxqts5qv3zdapqtn6a.arweave.net/xOxYsyWyPuQaTkNSJCa4bxVzcvrOs3hOXYV3kYHwm3w";
+        _requireMinted(tokenId);
+        return string(abi.encodePacked("ipfs://", metadata[tokenId]));
     }
 
     function requestContentHash(string calldata _url) private returns (bytes32 requestId) {
@@ -57,11 +58,12 @@ contract NotaryShot is ERC721Enumerable, INotaryShot, ChainlinkClient {
         requestId = sendChainlinkRequestTo(oracle, req, ORACLE_PAYMENT);
     }
 
-    function fulfillContentHash(bytes32 _requestId, uint256 _sha256sum) public recordChainlinkFulfillment(_requestId) {
+    function fulfillContentHash(bytes32 _requestId, uint256 _sha256sum, string calldata _metadataCid) public recordChainlinkFulfillment(_requestId) {
         RequestData memory requestData = requestIdToAddress[_requestId];
         emit RequestContentHashFulfilled(msg.sender, requestData.url, _sha256sum);
         if (_sha256sum == requestData.sha256sum) {
             _mint(requestData.requester, _sha256sum);
+            metadata[_sha256sum] = _metadataCid;
         } else {
             emit MintRequestRefused(msg.sender, requestData.url, requestData.sha256sum, _sha256sum);
         }

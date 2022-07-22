@@ -3,7 +3,7 @@ compiler:
     version: 0.8.15
     remappings:
       - "@openzeppelin=OpenZeppelin/openzeppelin-contracts@4.7.0/contracts"
-      - '@chainlink=smartcontractkit/chainlink-brownie-contracts@0.2.1/contracts/src/v0.8/'
+      - '@chainlink=smartcontractkit/chainlink-brownie-contracts@0.4.1/contracts/src/v0.8/'
 dependencies:
   - OpenZeppelin/openzeppelin-contracts@4.7.0
-  - smartcontractkit/chainlink-brownie-contracts@0.2.1
+  - smartcontractkit/chainlink-brownie-contracts@0.4.1
