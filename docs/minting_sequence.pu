@@ -1,0 +1,50 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+actor "End User" as eu
+
+participant "QO\nscreenshot\nmanager" as manager
+participant "QO\nscreenshot" as screenshot
+participant "QO\nscreenshot\nplugin" as plugin
+participant "DNS" as dns
+participant "Twitter" as twitter
+database "IPFS" as ipfs
+
+eu -> plugin : Preview
+eu <-- plugin : Preview Image
+
+group tx
+eu -[#blue]> manager: Screenshot URL
+manager --[#blue]> plugin: Screenshot URL
+end
+
+plugin -> dns: dig
+plugin <-- dns: dig results
+
+group screenshot capture
+plugin ->  twitter: http get
+plugin <-- twitter: HTML
+plugin ->  twitter: http get
+plugin <-- twitter: Image
+end
+
+plugin -> plugin: process image
+
+group screenshot store
+plugin -> ipfs: add
+note left
+source image
+processed image
+HTML
+dig results
+end note
+plugin <-- ipfs: content id
+end
+
+group tx: screenshot mint
+manager <[#blue]- plugin: content id
+manager --[#blue]> screenshot: mint( content id )
+eu <-- manager: minted
+end
+
+@enduml
