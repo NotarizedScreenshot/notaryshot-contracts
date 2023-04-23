@@ -1,4 +1,5 @@
-pragma solidity ^0.8.15;
+//SPDX-License-Identifier: MIT
+pragma solidity ^0.8.19;
 
 import "@openzeppelin/token/ERC721/extensions/ERC721Enumerable.sol";
 import "../interfaces/INotaryShot.sol";
@@ -8,39 +9,43 @@ import '@chainlink/ChainlinkClient.sol';
 contract NotaryShot is ERC721Enumerable, INotaryShot, ChainlinkClient {
     using Chainlink for Chainlink.Request;
 
-    event RequestContentHashSent(address indexed requester, string url, uint256 sha256sum);
-    event RequestContentHashFulfilled(address indexed requester, string url, uint256 sha256sum);
-    event MintRequestRefused(address indexed requester, string url, uint256 expectedSha256sum, uint256 actualSha256sum);
+    event SubmitTweetMint(address indexed minter, uint64 tweetId);
+    event TweetMint(uint256 id, address indexed minter, uint64 tweetId, string _metadataCid);
 
     struct RequestData {
-        address requester;
-        string url;
-        uint256 sha256sum;
+        address minter;
+        uint64 tweetId;
     }
 
     uint256 private constant ORACLE_PAYMENT = 10 ** 15;
     address public oracle;
     bytes32 public jobId;
+    uint256 public latestTokenId;
 
-    mapping(bytes32 => RequestData) public requestIdToAddress;
+    mapping(bytes32 => RequestData) public requestData;
     mapping(uint256 => string) public metadata;
 
-    constructor(address _oracle, string memory _jobid) ERC721("NotarizedScreenshot", "NS"){
-        setChainlinkToken(0xb0897686c545045aFc77CF20eC7A532E3120E0F1);
+    constructor(
+        address _linkToken,
+        address _oracle,
+        string memory _jobid,
+        string memory _name,
+        string memory _symbol
+    ) ERC721(_name, _symbol){
+        setChainlinkToken(_linkToken);
         oracle = _oracle;
         jobId = stringToBytes32(_jobid);
     }
 
-    function setJobId(string memory _jobid) external {//TODO permissions
+    function setJobId(string memory _jobid) external {//TODO permissions or remove
         jobId = stringToBytes32(_jobid);
     }
 
-    function submitMint(string calldata _url, uint256 _urlContentHash) external {
-        bytes32 requestId = requestContentHash(_url);
-        emit RequestContentHashSent(msg.sender, _url, _urlContentHash);
-        requestIdToAddress[requestId].requester = msg.sender;
-        requestIdToAddress[requestId].url = _url;
-        requestIdToAddress[requestId].sha256sum = _urlContentHash;
+    function submitTweetMint(uint64 tweetId) external {
+        bytes32 requestId = requestContentHash(tweetId);
+        emit SubmitTweetMint(msg.sender, tweetId);
+        requestData[requestId].minter = msg.sender;
+        requestData[requestId].tweetId = tweetId;
     }
 
     function tokenURI(uint256 tokenId) public view override(ERC721, IERC721Metadata) returns (string memory) {
@@ -48,26 +53,23 @@ contract NotaryShot is ERC721Enumerable, INotaryShot, ChainlinkClient {
         return string(abi.encodePacked("ipfs://", metadata[tokenId]));
     }
 
-    function requestContentHash(string calldata _url) private returns (bytes32 requestId) {
+    function requestContentHash(uint64 tweetId) private returns (bytes32 requestId) {
         Chainlink.Request memory req = buildChainlinkRequest(
             jobId,
             address(this),
             this.fulfillContentHash.selector
         );
-        req.add('get', _url);
+        req.addUint('tweetId', uint256(tweetId));
         requestId = sendChainlinkRequestTo(oracle, req, ORACLE_PAYMENT);
     }
 
-    function fulfillContentHash(bytes32 _requestId, uint256 _sha256sum, string calldata _metadataCid) public recordChainlinkFulfillment(_requestId) {
-        RequestData memory requestData = requestIdToAddress[_requestId];
-        emit RequestContentHashFulfilled(msg.sender, requestData.url, _sha256sum);
-        if (_sha256sum == requestData.sha256sum) {
-            _mint(requestData.requester, _sha256sum);
-            metadata[_sha256sum] = _metadataCid;
-        } else {
-            emit MintRequestRefused(msg.sender, requestData.url, requestData.sha256sum, _sha256sum);
-        }
-        delete requestIdToAddress[_requestId];
+    function fulfillContentHash(bytes32 _requestId, string calldata _metadataCid) public recordChainlinkFulfillment(_requestId) {
+        RequestData memory request = requestData[_requestId];
+
+        _mint(request.minter, ++latestTokenId);
+        metadata[latestTokenId] = _metadataCid;
+        delete requestData[_requestId];
+        emit TweetMint(latestTokenId, request.minter, request.tweetId, _metadataCid);
     }
 
     function stringToBytes32(string memory source) private pure returns (bytes32 result) {
