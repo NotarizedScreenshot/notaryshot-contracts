@@ -9,16 +9,13 @@ import '@chainlink/ChainlinkClient.sol';
 contract NotaryShot is ERC721Enumerable, INotaryShot, ChainlinkClient {
     using Chainlink for Chainlink.Request;
 
-    event SubmitTweetMint(address indexed minter, uint64 tweetId);
-    event TweetMint(uint256 id, address indexed minter, uint64 tweetId, string _metadataCid);
-
     struct RequestData {
         address minter;
         uint64 tweetId;
     }
 
     uint256 private constant ORACLE_PAYMENT = 10 ** 15;
-    address public oracle;
+    address public oracle; //operator contract
     bytes32 public jobId;
     uint256 public latestTokenId;
 
@@ -37,8 +34,12 @@ contract NotaryShot is ERC721Enumerable, INotaryShot, ChainlinkClient {
         jobId = stringToBytes32(_jobid);
     }
 
-    function setJobId(string memory _jobid) external {//TODO permissions or remove
+    function setJobId(string memory _jobid) external {//TODO utgarda #8 permissions or remove
         jobId = stringToBytes32(_jobid);
+    }
+
+    function setOracle(address _oracle) external {//TODO utgarda #8 permissions or remove
+        oracle = oracle;
     }
 
     function submitTweetMint(uint64 tweetId) external {
@@ -63,13 +64,12 @@ contract NotaryShot is ERC721Enumerable, INotaryShot, ChainlinkClient {
         requestId = sendChainlinkRequestTo(oracle, req, ORACLE_PAYMENT);
     }
 
-    function fulfillContentHash(bytes32 _requestId, string calldata _metadataCid) public recordChainlinkFulfillment(_requestId) {
-        RequestData memory request = requestData[_requestId];
-
+    function fulfillContentHash(bytes32 requestId, string calldata cid) public recordChainlinkFulfillment(requestId) {
+        RequestData memory request = requestData[requestId];
         _mint(request.minter, ++latestTokenId);
-        metadata[latestTokenId] = _metadataCid;
-        delete requestData[_requestId];
-        emit TweetMint(latestTokenId, request.minter, request.tweetId, _metadataCid);
+        metadata[latestTokenId] = cid;
+        delete requestData[requestId];
+        emit TweetMint(latestTokenId, request.minter, request.tweetId, cid);
     }
 
     function stringToBytes32(string memory source) private pure returns (bytes32 result) {
