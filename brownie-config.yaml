@@ -1,6 +1,6 @@
 compiler:
   solc:
-    version: 0.8.19
+    version: 0.8.20
     remappings:
       - "@openzeppelin=OpenZeppelin/openzeppelin-contracts@4.9.0-rc.0/contracts"
       - '@chainlink=smartcontractkit/chainlink-brownie-contracts@0.6.1/contracts/src/v0.8/'
