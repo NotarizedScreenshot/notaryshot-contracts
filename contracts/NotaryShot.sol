@@ -3,6 +3,7 @@ pragma solidity ^0.8.20;
 
 import "@openzeppelin/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/utils/Strings.sol";
+import "@openzeppelin/access/Ownable.sol";
 import '@chainlink/ChainlinkClient.sol';
 import "../interfaces/INotaryShot.sol";
 
@@ -13,7 +14,7 @@ import "../interfaces/INotaryShot.sol";
     @notice Allows users to mint NFTs representing verifiable screenshots of web content.
     @notice Utilizes Chainlink nodes with QuantumOracle's external adapter for data verification and retrieval.
 */
-contract NotaryShot is ERC721Enumerable, INotaryShot, ChainlinkClient {
+contract NotaryShot is ERC721Enumerable, Ownable, INotaryShot, ChainlinkClient {
     using Chainlink for Chainlink.Request;
 
     struct RequestData {
@@ -24,7 +25,7 @@ contract NotaryShot is ERC721Enumerable, INotaryShot, ChainlinkClient {
     mapping(bytes32 => RequestData) public requestData;
     mapping(uint256 => string) public metadata;
 
-    uint256 public constant ORACLE_FEE = 10 ** 15;
+    uint256 public oracleFee = 10 ** 15;
     address public oracle; //operator contract
     bytes32 public jobId;
     uint256 public latestTokenId;
@@ -44,7 +45,9 @@ contract NotaryShot is ERC721Enumerable, INotaryShot, ChainlinkClient {
         string memory _jobid,
         string memory _name,
         string memory _symbol
-    ) ERC721(_name, _symbol){
+    )
+    ERC721(_name, _symbol)
+    {
         setChainlinkToken(_linkToken);
         oracle = _oracle;
         jobId = stringToBytes32(_jobid);
@@ -61,6 +64,30 @@ contract NotaryShot is ERC721Enumerable, INotaryShot, ChainlinkClient {
         emit SubmitTweetMint(msg.sender, tweetId);
         requestData[requestId].minter = msg.sender;
         requestData[requestId].tweetId = tweetId;
+    }
+
+    /**
+        @notice This method is used to change the oracle fee
+        @param _oracleFee new oracle fee
+    */
+    function setOracleFee(uint256 _oracleFee) public onlyOwner {
+        oracleFee = _oracleFee;
+    }
+
+    /**
+        @notice This method is used to change the operator address
+        @param _oracle new operator address
+    */
+    function setOracle(address _oracle) public onlyOwner {
+        oracle = _oracle;
+    }
+
+    /**
+        @notice This method is used to change the job ID
+        @param _jobId new job ID
+    */
+    function setJobId(string memory _jobId) public onlyOwner {
+        jobId = stringToBytes32(_jobId);
     }
 
     /**
@@ -81,7 +108,7 @@ contract NotaryShot is ERC721Enumerable, INotaryShot, ChainlinkClient {
             this.fulfillContentHash.selector
         );
         req.add('tweetId', Strings.toString(uint256(tweetId)));
-        requestId = sendChainlinkRequestTo(oracle, req, ORACLE_FEE);
+        requestId = sendChainlinkRequestTo(oracle, req, oracleFee);
     }
 
     /**
