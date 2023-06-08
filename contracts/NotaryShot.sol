@@ -2,9 +2,10 @@
 pragma solidity ^0.8.20;
 
 import "@openzeppelin/token/ERC721/extensions/ERC721Enumerable.sol";
+import "@openzeppelin/utils/Strings.sol";
 import "@openzeppelin/access/Ownable.sol";
-import "../interfaces/INotaryShot.sol";
 import '@chainlink/ChainlinkClient.sol';
+import "../interfaces/INotaryShot.sol";
 
 /**
     @title NotarizedScreenshot
@@ -106,7 +107,7 @@ contract NotaryShot is ERC721Enumerable, Ownable, INotaryShot, ChainlinkClient {
             address(this),
             this.fulfillContentHash.selector
         );
-        req.addUint('tweetId', uint256(tweetId));
+        req.add('tweetId', Strings.toString(uint256(tweetId)));
         requestId = sendChainlinkRequestTo(oracle, req, oracleFee);
     }
 
