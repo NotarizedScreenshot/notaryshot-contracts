@@ -1,9 +1,10 @@
 //SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import "@openzeppelin/token/ERC721/extensions/ERC721Enumerable.sol";
-import "@openzeppelin/utils/Strings.sol";
-import "@openzeppelin/access/Ownable.sol";
+import "@openzeppelin/access/OwnableUpgradeable.sol";
+import "@openzeppelin/proxy/utils/UUPSUpgradeable.sol";
+import "@openzeppelin/token/ERC721/extensions/ERC721EnumerableUpgradeable.sol";
+import "@openzeppelin/utils/StringsUpgradeable.sol";
 import '@chainlink/ChainlinkClient.sol';
 import "../interfaces/INotaryShot.sol";
 
@@ -14,7 +15,7 @@ import "../interfaces/INotaryShot.sol";
     @notice Allows users to mint NFTs representing verifiable screenshots of web content.
     @notice Utilizes Chainlink nodes with QuantumOracle's external adapter for data verification and retrieval.
 */
-contract NotaryShot is ERC721Enumerable, Ownable, INotaryShot, ChainlinkClient {
+contract NotaryShot is INotaryShot, UUPSUpgradeable, ERC721EnumerableUpgradeable, OwnableUpgradeable, ChainlinkClient {
     using Chainlink for Chainlink.Request;
 
     struct RequestData {
@@ -39,18 +40,37 @@ contract NotaryShot is ERC721Enumerable, Ownable, INotaryShot, ChainlinkClient {
         @param _name NFT collection name
         @param _symbol NFT collection symbol
     */
-    constructor(
+    //    constructor(
+    //        address _linkToken,
+    //        address _oracle,
+    //        string memory _jobid,
+    //        string memory _name,
+    //        string memory _symbol
+    //    )
+    //    ERC721(_name, _symbol)
+    //    {
+    //        setChainlinkToken(_linkToken);
+    //        oracle = _oracle;
+    //        jobId = stringToBytes32(_jobid);
+    //    }
+
+    /**
+     * @notice Initializes the contract by setting the payment receiver and assigning DEFAULT_ADMIN_ROLE to the sender
+     */
+    function initialize(
         address _linkToken,
         address _oracle,
         string memory _jobid,
         string memory _name,
         string memory _symbol
-    )
-    ERC721(_name, _symbol)
-    {
+    ) public initializer {
+        __UUPSUpgradeable_init();
+        __Ownable_init();
+        __ERC721Enumerable_init();
+        __ERC721_init(_name, _symbol);
         setChainlinkToken(_linkToken);
-        oracle = _oracle;
         jobId = stringToBytes32(_jobid);
+        oracle = _oracle;
     }
 
     /**
@@ -93,10 +113,15 @@ contract NotaryShot is ERC721Enumerable, Ownable, INotaryShot, ChainlinkClient {
     /**
      * @dev Returns the Uniform Resource Identifier (URI) for `tokenId` token.
      */
-    function tokenURI(uint256 tokenId) public view override(ERC721, IERC721Metadata) returns (string memory) {
+    function tokenURI(uint256 tokenId) public view override(ERC721Upgradeable, IERC721MetadataUpgradeable) returns (string memory) {
         _requireMinted(tokenId);
         return string(abi.encodePacked("ipfs://", metadata[tokenId]));
     }
+
+    /**
+     * @notice owner can perform upgrades
+     */
+    function _authorizeUpgrade(address) internal override onlyOwner {}
 
     /**
      * @dev Requests saved tweet screenshot content ID
@@ -107,7 +132,7 @@ contract NotaryShot is ERC721Enumerable, Ownable, INotaryShot, ChainlinkClient {
             address(this),
             this.fulfillContentHash.selector
         );
-        req.add('tweetId', Strings.toString(uint256(tweetId)));
+        req.add('tweetId', StringsUpgradeable.toString(uint256(tweetId)));
         requestId = sendChainlinkRequestTo(oracle, req, oracleFee);
     }
 
