@@ -1,5 +1,4 @@
-from brownie import NotaryShot, accounts, interface, config, project
-from pathlib import Path
+from brownie import ERC1967Proxy, NotaryShot, accounts, interface
 
 PUBLISH_SOURCE = True
 
@@ -8,9 +7,6 @@ PUBLISH_SOURCE = True
 ORACLE_CONTRACT = "0xea85b380B28FA3A95E46B6817e3CB6ae7F467F57"
 JOB_ID = "5f26bf32451746158e11edb088eb3312"
 POLYGON_LINK_TOKEN = "0xb0897686c545045aFc77CF20eC7A532E3120E0F1"
-
-project.load(Path.home() / ".brownie" / "packages" / config["dependencies"][1])
-ERC1967Proxy = project.OpenzeppelinContracts491Project.ERC1967Proxy
 
 
 # export POLYGONSCAN_TOKEN=XXXXXXXXXXXXXXXXXXXXXXXXXX___FIXME
@@ -29,12 +25,9 @@ def main():
         JOB_ID,
         "TestNotaryShot",
         "TNS",
-        {'from': deployer},
-        publish_source=PUBLISH_SOURCE,
     )
 
     notaryshot = ERC1967Proxy.deploy(
-        ERC1967Proxy,
         notaryshot_logic,
         notaryshot_init_data,
         {'from': deployer},
@@ -42,4 +35,4 @@ def main():
     )
 
     link = interface.IERC20(POLYGON_LINK_TOKEN)
-    link.transfer(notaryshot, 10 ** 16, {'from': deployer})
+    link.transfer(notaryshot, 10 ** 18, {'from': deployer})
