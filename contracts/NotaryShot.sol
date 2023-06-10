@@ -11,6 +11,7 @@ import "../interfaces/INotaryShot.sol";
 /**
     @title NotarizedScreenshot
     @author Gene A. Tsvigun
+    @author Denise Epstein
     @notice The main contract for QuantumOracle's NotarizedScreenshot NFTs.
     @notice Allows users to mint NFTs representing verifiable screenshots of web content.
     @notice Utilizes Chainlink nodes with QuantumOracle's external adapter for data verification and retrieval.
@@ -35,9 +36,9 @@ contract NotaryShot is INotaryShot, UUPSUpgradeable, ERC721EnumerableUpgradeable
         @notice Initializes the contract by setting the payment receiver and assigning DEFAULT_ADMIN_ROLE to the sender
         @param _linkToken LINK token address
         @param _oracle operator contract address
-        @param _jobid ChainLink job ID without dashes like 5f26bf32451746158e11edb088eb3312
         @notice the job may be named like 'Get Mintable Screenshot Metadata CID by tweetId'
         @notice job ID initially contains dashes, like 5f26bf32-4517-4615-8e11-edb088eb3312, remove dashes first
+        @param _jobid ChainLink job ID without dashes like 5f26bf32451746158e11edb088eb3312
         @param _name NFT collection name
         @param _symbol NFT collection symbol
      */
