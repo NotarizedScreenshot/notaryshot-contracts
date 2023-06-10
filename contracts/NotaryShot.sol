@@ -26,7 +26,7 @@ contract NotaryShot is INotaryShot, UUPSUpgradeable, ERC721EnumerableUpgradeable
     mapping(bytes32 => RequestData) public requestData;
     mapping(uint256 => string) public metadata;
 
-    uint256 public oracleFee = 10 ** 15;
+    uint256 public oracleFee;
     address public oracle; //operator contract
     bytes32 public jobId;
     uint256 public latestTokenId;
@@ -60,6 +60,7 @@ contract NotaryShot is INotaryShot, UUPSUpgradeable, ERC721EnumerableUpgradeable
     function initialize(
         address _linkToken,
         address _oracle,
+        uint256 _oracleFee,
         string memory _jobid,
         string memory _name,
         string memory _symbol
@@ -71,6 +72,7 @@ contract NotaryShot is INotaryShot, UUPSUpgradeable, ERC721EnumerableUpgradeable
         setChainlinkToken(_linkToken);
         jobId = stringToBytes32(_jobid);
         oracle = _oracle;
+        oracleFee = _oracleFee;
     }
 
     /**

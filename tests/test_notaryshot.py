@@ -21,6 +21,7 @@ def notaryshot(NotaryShot, dev):
         LINK_TOKEN,
         ORACLE_CONTRACT,
         JOB_ID,
+        10 ** 15,
         "TestNotaryShot",
         "NS",
         {'from': dev}

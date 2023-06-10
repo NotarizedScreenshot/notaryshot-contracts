@@ -12,16 +12,18 @@ POLYGON_LINK_TOKEN = "0xb0897686c545045aFc77CF20eC7A532E3120E0F1"
 # export POLYGONSCAN_TOKEN=XXXXXXXXXXXXXXXXXXXXXXXXXX___FIXME
 # brownie run scripts/deploy_notaryshot.py --network polygon-main
 def main():
-    deployer = accounts.load('polygon_deployer')
+    deployer = accounts.load('ethrum_deployer')
 
-    notaryshot_logic = NotaryShot.deploy(
-        {'from': deployer},
-        publish_source=PUBLISH_SOURCE,
-    )
+    #notaryshot_logic = NotaryShot.deploy(
+    #    {'from': deployer},
+    #    publish_source=PUBLISH_SOURCE,
+    #)
+    notaryshot_logic = NotaryShot.at("0x5B1C7b6AD1abb65338cC1d56Bb9b4f84441bc3A5")
 
     notaryshot_init_data = notaryshot_logic.initialize.encode_input(
         POLYGON_LINK_TOKEN,
         ORACLE_CONTRACT,
+        10 ** 15,
         JOB_ID,
         "TestNotaryShot",
         "TNS",
