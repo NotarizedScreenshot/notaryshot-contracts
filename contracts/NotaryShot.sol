@@ -32,6 +32,7 @@ contract NotaryShot is INotaryShot, UUPSUpgradeable, ERC721EnumerableUpgradeable
     uint256 public latestTokenId;
 
     /**
+        @notice Initializes the contract by setting the payment receiver and assigning DEFAULT_ADMIN_ROLE to the sender
         @param _linkToken LINK token address
         @param _oracle operator contract address
         @param _jobid ChainLink job ID without dashes like 5f26bf32451746158e11edb088eb3312
@@ -39,23 +40,6 @@ contract NotaryShot is INotaryShot, UUPSUpgradeable, ERC721EnumerableUpgradeable
         @notice job ID initially contains dashes, like 5f26bf32-4517-4615-8e11-edb088eb3312, remove dashes first
         @param _name NFT collection name
         @param _symbol NFT collection symbol
-    */
-    //    constructor(
-    //        address _linkToken,
-    //        address _oracle,
-    //        string memory _jobid,
-    //        string memory _name,
-    //        string memory _symbol
-    //    )
-    //    ERC721(_name, _symbol)
-    //    {
-    //        setChainlinkToken(_linkToken);
-    //        oracle = _oracle;
-    //        jobId = stringToBytes32(_jobid);
-    //    }
-
-    /**
-     * @notice Initializes the contract by setting the payment receiver and assigning DEFAULT_ADMIN_ROLE to the sender
      */
     function initialize(
         address _linkToken,
