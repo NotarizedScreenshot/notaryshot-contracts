@@ -110,6 +110,10 @@ contract NotaryShot is INotaryShot, UUPSUpgradeable, ERC721EnumerableUpgradeable
         jobId = stringToBytes32(_jobId);
     }
 
+    function transferOwnership(address newOwner) public override(INotaryShot, OwnableUpgradeable)  onlyOwner {
+        super.transferOwnership(newOwner);
+    }
+
     /**
      * @dev Returns the Uniform Resource Identifier (URI) for `tokenId` token.
      */
