@@ -14,14 +14,19 @@ def minter(accounts):
 
 @pytest.fixture
 def notaryshot(NotaryShot, dev):
-    return NotaryShot.deploy(
+    ns = NotaryShot.deploy(
+        {'from': dev}
+    )
+    ns.initialize(
         LINK_TOKEN,
         ORACLE_CONTRACT,
+        10 ** 15,
         JOB_ID,
         "TestNotaryShot",
         "NS",
         {'from': dev}
     )
+    return ns
 
 
 def test_symbol(notaryshot, dev):

@@ -1,4 +1,4 @@
-from brownie import NotaryShot, accounts, interface
+from brownie import ERC1967Proxy, NotaryShot, accounts, interface
 
 PUBLISH_SOURCE = True
 
@@ -14,14 +14,26 @@ POLYGON_LINK_TOKEN = "0xb0897686c545045aFc77CF20eC7A532E3120E0F1"
 def main():
     deployer = accounts.load('polygon_deployer')
 
-    notaryshot = NotaryShot.deploy(
+    notaryshot_logic = NotaryShot.deploy(
+       {'from': deployer},
+       publish_source=PUBLISH_SOURCE,
+    )
+
+    notaryshot_init_data = notaryshot_logic.initialize.encode_input(
         POLYGON_LINK_TOKEN,
         ORACLE_CONTRACT,
+        10 ** 15,
         JOB_ID,
-        "TestNotaryShot",
-        "TNS",
+        "Quantum Oracle Alpha Release NFTs: Verified Discoveries",
+        "VERA",
+    )
+
+    notaryshot = ERC1967Proxy.deploy(
+        notaryshot_logic,
+        notaryshot_init_data,
         {'from': deployer},
         publish_source=PUBLISH_SOURCE,
     )
+
     link = interface.IERC20(POLYGON_LINK_TOKEN)
-    link.transfer(notaryshot, 10 ** 16, {'from': deployer})
+    link.transfer(notaryshot, 10 ** 18, {'from': deployer})

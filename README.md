@@ -2,7 +2,7 @@
 Contracts of the QuantumOracle, a.k.a. NotarizedScreenshot  project
 
 ### Polygon Addesses
-[NotaryShot](https://polygonscan.com/address/0x893ed521b4ae3ed0fbc1cdc6112dcd341fae8c07#code)  
+[NotaryShot](https://polygonscan.com/address/0xb95355174E434Cc7503F4F08B096EDf390007868#code)  
 [Operator](https://polygonscan.com/address/0xea85b380B28FA3A95E46B6817e3CB6ae7F467F57)
 
 ### Setup
