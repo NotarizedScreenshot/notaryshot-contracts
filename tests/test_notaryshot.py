@@ -20,8 +20,8 @@ def notaryshot(NotaryShot, dev):
     ns.initialize(
         LINK_TOKEN,
         ORACLE_CONTRACT,
-        JOB_ID,
         10 ** 15,
+        JOB_ID,
         "TestNotaryShot",
         "NS",
         {'from': dev}
