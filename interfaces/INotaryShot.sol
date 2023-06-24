@@ -15,7 +15,7 @@ interface INotaryShot is IERC721MetadataUpgradeable {
     event SubmitTweetMint(address indexed minter, uint64 tweetId);
     event TweetMint(uint256 id, address indexed minter, uint64 tweetId, string _metadataCid);
 
-    function submitTweetMint(uint64 tweetId) external;
+    function submitTweetMint(uint64 tweetId, string calldata cid) external;
     function setOracleFee(uint256 _oracleFee) external;
     function setOracle(address _oracle) external;
     function setJobId(string memory _jobId) external;

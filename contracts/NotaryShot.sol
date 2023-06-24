@@ -65,9 +65,24 @@ contract NotaryShot is INotaryShot, UUPSUpgradeable, ERC721EnumerableUpgradeable
         @notice after they have seen a preview
         @param tweetId ID of the tweet to immortalize
         @dev saves `msg.sender` as minter alongside `tweetId` until a Chainlink node provides results
+        @dev this function temporarily stays till the frontend migrates to the new interface
     */
     function submitTweetMint(uint64 tweetId) external {
         bytes32 requestId = requestContentHash(tweetId);
+        emit SubmitTweetMint(msg.sender, tweetId);
+        requestData[requestId].minter = msg.sender;
+        requestData[requestId].tweetId = tweetId;
+    }
+
+    /**
+        @notice This is how users declare their intention to mint a verifiable screenshot of a single tweet
+        @notice after they have seen a preview
+        @param tweetId ID of the tweet to immortalize
+        @param cid NFT metadata CID being confirmed by the user
+        @dev saves `msg.sender` as minter alongside `tweetId` until a Chainlink node provides results
+    */
+    function submitTweetMint(uint64 tweetId, string calldata cid) external {
+        bytes32 requestId = confirmCid(tweetId, cid);
         emit SubmitTweetMint(msg.sender, tweetId);
         requestData[requestId].minter = msg.sender;
         requestData[requestId].tweetId = tweetId;
@@ -97,7 +112,7 @@ contract NotaryShot is INotaryShot, UUPSUpgradeable, ERC721EnumerableUpgradeable
         jobId = stringToBytes32(_jobId);
     }
 
-    function transferOwnership(address newOwner) public override(INotaryShot, OwnableUpgradeable)  onlyOwner {
+    function transferOwnership(address newOwner) public override(INotaryShot, OwnableUpgradeable) onlyOwner {
         super.transferOwnership(newOwner);
     }
 
@@ -126,6 +141,21 @@ contract NotaryShot is INotaryShot, UUPSUpgradeable, ERC721EnumerableUpgradeable
         req.add('tweetId', StringsUpgradeable.toString(uint256(tweetId)));
         requestId = sendChainlinkRequestTo(oracle, req, oracleFee);
     }
+
+    /**
+     * @dev Requests saved tweet screenshot content ID confirmation
+     */
+    function confirmCid(uint64 tweetId, string calldata cid) private returns (bytes32 requestId) {
+        Chainlink.Request memory req = buildChainlinkRequest(
+            jobId,
+            address(this),
+            this.fulfillContentHash.selector
+        );
+        req.add('tweetId', StringsUpgradeable.toString(uint256(tweetId)));
+        req.add('cid', cid);
+        requestId = sendChainlinkRequestTo(oracle, req, oracleFee);
+    }
+
 
     /**
      * @dev Accept saved tweet content ID provided by a Chainlink node with QuantumOracle's external adapter
