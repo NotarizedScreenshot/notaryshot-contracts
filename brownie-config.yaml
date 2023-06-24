@@ -5,5 +5,5 @@ compiler:
       - "@openzeppelin=OpenZeppelin/openzeppelin-contracts-upgradeable@4.9.1/contracts"
       - '@chainlink=smartcontractkit/chainlink-brownie-contracts@0.6.1/contracts/src/v0.8/'
 dependencies:
-  - OpenZeppelin/openzeppelin-contracts-upgradeable@4.9.1
+  - OpenZeppelin/openzeppelin-contracts-upgradeable@4.9.2
   - smartcontractkit/chainlink-brownie-contracts@0.6.1
